@@ -51,6 +51,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
+    func applicationSupportsSecureRestorableState(_: NSApplication) -> Bool {
+        return true
+    }
+
     @objc func toggleCheckboxMoveCursorItem(_ sender: NSMenuItem) {
         // Toggle checkbox
         sender.state = (sender.state == .on) ? .off : .on
