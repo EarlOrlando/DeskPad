@@ -7,9 +7,10 @@ enum AppDelegateAction: Action {
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var window: NSWindow!
+    var viewController: ScreenViewController!
 
     func applicationDidFinishLaunching(_: Notification) {
-        let viewController = ScreenViewController()
+        viewController = ScreenViewController()
         window = NSWindow(contentViewController: viewController)
         window.title = "DeskPad"
         window.makeKeyAndOrderFront(nil)
@@ -22,11 +23,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let mainMenu = NSMenu()
         let mainMenuItem = NSMenuItem()
         let subMenu = NSMenu(title: "MainMenu")
+        let checkboxMoveCursorItem = NSMenuItem(
+            title: "Move cursor to virtual display on click",
+            action: #selector(toggleCheckboxMoveCursorItem(_:)),
+            keyEquivalent: ""
+        )
+
+        // Get last checkbox state
+        viewController.moveCursorItemOnClick = UserDefaults.standard.bool(forKey: "CheckboxState")
+        checkboxMoveCursorItem.state = viewController.moveCursorItemOnClick ? .on : .off
+
         let quitMenuItem = NSMenuItem(
             title: "Quit",
             action: #selector(NSApp.terminate),
             keyEquivalent: "q"
         )
+        subMenu.addItem(checkboxMoveCursorItem)
         subMenu.addItem(quitMenuItem)
         mainMenuItem.submenu = subMenu
         mainMenu.items = [mainMenuItem]
@@ -37,5 +49,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminateAfterLastWindowClosed(_: NSApplication) -> Bool {
         return true
+    }
+
+    @objc func toggleCheckboxMoveCursorItem(_ sender: NSMenuItem) {
+        // Toggle checkbox
+        sender.state = (sender.state == .on) ? .off : .on
+        UserDefaults.standard.set(sender.state == .on, forKey: "CheckboxState")
+
+        if sender.state == .on {
+            // Checkbox is selected.
+            viewController.moveCursorItemOnClick = true
+        } else {
+            // Checkbox is not selected.
+            viewController.moveCursorItemOnClick = false
+        }
     }
 }

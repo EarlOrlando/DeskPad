@@ -17,6 +17,7 @@ class ScreenViewController: SubscriberViewController<ScreenViewData> {
     private var previousResolution: CGSize?
     lazy var window: NSWindow = view.window!
     private var location: NSPoint { window.mouseLocationOutsideOfEventStream }
+    var moveCursorItemOnClick = true
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,7 +62,10 @@ class ScreenViewController: SubscriberViewController<ScreenViewData> {
                 // Move the mouse to the virtual display
                 var newPoint = self.location
                 newPoint.y = self.previousResolution!.height - self.location.y
-                CGDisplayMoveCursorToPoint(self.display.displayID, newPoint)
+                // Move cursor only if menu item is enabled
+                if self.moveCursorItemOnClick {
+                    CGDisplayMoveCursorToPoint(self.display.displayID, newPoint)
+                }
             }
             return $0
         }
