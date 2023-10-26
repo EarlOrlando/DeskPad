@@ -24,8 +24,8 @@ class ScreenViewController: SubscriberViewController<ScreenViewData> {
         let descriptor = CGVirtualDisplayDescriptor()
         descriptor.setDispatchQueue(DispatchQueue.main)
         descriptor.name = "DeskPad Display"
-        descriptor.maxPixelsWide = 1920
-        descriptor.maxPixelsHigh = 1200
+        descriptor.maxPixelsWide = 3840
+        descriptor.maxPixelsHigh = 2160
         descriptor.sizeInMillimeters = CGSize(width: 1600, height: 1000)
         descriptor.productID = 0x1234
         descriptor.vendorID = 0x3456
