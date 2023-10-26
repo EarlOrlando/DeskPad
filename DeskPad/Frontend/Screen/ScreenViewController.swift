@@ -15,6 +15,8 @@ class ScreenViewController: SubscriberViewController<ScreenViewData> {
     private var stream: CGDisplayStream?
     private var isWindowHighlighted = false
     private var previousResolution: CGSize?
+    lazy var window: NSWindow = view.window!
+    private var location: NSPoint { window.mouseLocationOutsideOfEventStream }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,6 +54,17 @@ class ScreenViewController: SubscriberViewController<ScreenViewData> {
             CGVirtualDisplayMode(width: 1280, height: 800, refreshRate: 60),
         ]
         display.apply(settings)
+
+        NSEvent.addLocalMonitorForEvents(matching: [.leftMouseUp]) {
+            // If mouse is not in the title bar
+            if self.location.y < self.previousResolution!.height {
+                // Move the mouse to the virtual display
+                var newPoint = self.location
+                newPoint.y = self.previousResolution!.height - self.location.y
+                CGDisplayMoveCursorToPoint(self.display.displayID, newPoint)
+            }
+            return $0
+        }
     }
 
     override func update(with viewData: ScreenViewData) {

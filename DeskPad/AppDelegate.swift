@@ -17,6 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.isMovableByWindowBackground = true
         window.titleVisibility = .hidden
         window.backgroundColor = .white
+        window.acceptsMouseMovedEvents = true
 
         let mainMenu = NSMenu()
         let mainMenuItem = NSMenuItem()
