@@ -5,7 +5,7 @@ enum ScreenViewAction: Action {
     case setDisplayID(CGDirectDisplayID)
 }
 
-class ScreenViewController: SubscriberViewController<ScreenViewData> {
+class ScreenViewController: SubscriberViewController<ScreenViewData>, NSWindowDelegate {
     override func loadView() {
         view = NSView()
         view.wantsLayer = true
@@ -21,6 +21,7 @@ class ScreenViewController: SubscriberViewController<ScreenViewData> {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.window?.delegate = self
 
         let descriptor = CGVirtualDisplayDescriptor()
         descriptor.setDispatchQueue(DispatchQueue.main)
@@ -39,16 +40,15 @@ class ScreenViewController: SubscriberViewController<ScreenViewData> {
         let settings = CGVirtualDisplaySettings()
         settings.hiDPI = 1
         settings.modes = [
-            // 16:9 without menu bar and title menu to optimize window size
-            CGVirtualDisplayMode(width: 2560, height: 1375, refreshRate: 60),
-            CGVirtualDisplayMode(width: 1920, height: 1015, refreshRate: 60),
             // 16:9
+            CGVirtualDisplayMode(width: 3840, height: 2160, refreshRate: 60),
             CGVirtualDisplayMode(width: 2560, height: 1440, refreshRate: 60),
             CGVirtualDisplayMode(width: 1920, height: 1080, refreshRate: 60),
             CGVirtualDisplayMode(width: 1600, height: 900, refreshRate: 60),
             CGVirtualDisplayMode(width: 1366, height: 768, refreshRate: 60),
             CGVirtualDisplayMode(width: 1280, height: 720, refreshRate: 60),
             // 16:10
+            CGVirtualDisplayMode(width: 2560, height: 1600, refreshRate: 60),
             CGVirtualDisplayMode(width: 1920, height: 1200, refreshRate: 60),
             CGVirtualDisplayMode(width: 1680, height: 1050, refreshRate: 60),
             CGVirtualDisplayMode(width: 1440, height: 900, refreshRate: 60),
@@ -58,12 +58,13 @@ class ScreenViewController: SubscriberViewController<ScreenViewData> {
 
         NSEvent.addLocalMonitorForEvents(matching: [.leftMouseUp]) {
             // If mouse is not in the title bar
-            if self.location.y < self.previousResolution!.height {
-                // Move the mouse to the virtual display
-                var newPoint = self.location
-                newPoint.y = self.previousResolution!.height - self.location.y
+            if self.location.y < self.window.contentView!.frame.height {
                 // Move cursor only if menu item is enabled
                 if self.moveCursorItemOnClick {
+                    // Move the mouse to the virtual display
+                    var newPoint = self.location
+                    newPoint.x = self.location.x * (self.previousResolution!.width / self.window.frame.size.width)
+                    newPoint.y = self.previousResolution!.height - self.location.y * (self.previousResolution!.height / self.window.contentView!.frame.height)
                     CGDisplayMoveCursorToPoint(self.display.displayID, newPoint)
                 }
             }
@@ -84,10 +85,13 @@ class ScreenViewController: SubscriberViewController<ScreenViewData> {
 
         if viewData.resolution != .zero, viewData.resolution != previousResolution {
             previousResolution = viewData.resolution
+            let aspectRatio: Double = viewData.resolution.width / viewData.resolution.height
             stream = nil
-            view.window?.contentMinSize = viewData.resolution
-            view.window?.contentMaxSize = viewData.resolution
+            view.window?.contentMinSize = CGSize(width: 400, height: 300)
+            view.window?.contentMaxSize = CGSize(width: 3840, height: 2160)
+            view.window?.styleMask = [.titled, .closable, .resizable, .miniaturizable]
             view.window?.setContentSize(viewData.resolution)
+            view.window?.contentAspectRatio = NSSize(width: aspectRatio, height: 1.0)
             view.window?.center()
             let stream = CGDisplayStream(
                 dispatchQueueDisplay: display.displayID,
