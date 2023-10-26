@@ -22,6 +22,9 @@ class ScreenViewController: SubscriberViewController<ScreenViewData>, NSWindowDe
     override func viewDidLoad() {
         super.viewDidLoad()
         view.window?.delegate = self
+        view.window?.contentMinSize = CGSize(width: 400, height: 300)
+        view.window?.contentMaxSize = CGSize(width: 3840, height: 2160)
+        view.window?.styleMask = [.titled, .closable, .resizable, .miniaturizable]
 
         let descriptor = CGVirtualDisplayDescriptor()
         descriptor.setDispatchQueue(DispatchQueue.main)
@@ -85,13 +88,9 @@ class ScreenViewController: SubscriberViewController<ScreenViewData>, NSWindowDe
 
         if viewData.resolution != .zero, viewData.resolution != previousResolution {
             previousResolution = viewData.resolution
-            let aspectRatio: Double = viewData.resolution.width / viewData.resolution.height
             stream = nil
-            view.window?.contentMinSize = CGSize(width: 400, height: 300)
-            view.window?.contentMaxSize = CGSize(width: 3840, height: 2160)
-            view.window?.styleMask = [.titled, .closable, .resizable, .miniaturizable]
             view.window?.setContentSize(viewData.resolution)
-            view.window?.contentAspectRatio = NSSize(width: aspectRatio, height: 1.0)
+            view.window?.contentAspectRatio = NSSize(width: viewData.resolution.width, height: viewData.resolution.height)
             view.window?.center()
             let stream = CGDisplayStream(
                 dispatchQueueDisplay: display.displayID,
