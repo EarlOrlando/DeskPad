@@ -5,26 +5,19 @@ enum ScreenViewAction: Action {
     case setDisplayID(CGDirectDisplayID)
 }
 
-class ScreenViewController: SubscriberViewController<ScreenViewData>, NSWindowDelegate {
+class ScreenViewController: SubscriberViewController<ScreenViewData> {
     override func loadView() {
         view = NSView()
         view.wantsLayer = true
     }
 
-    private var display: CGVirtualDisplay!
+    var display: CGVirtualDisplay!
     private var stream: CGDisplayStream?
     private var isWindowHighlighted = false
-    private var previousResolution: CGSize?
-    lazy var window: NSWindow = view.window!
-    private var location: NSPoint { window.mouseLocationOutsideOfEventStream }
-    var moveCursorItemOnClick = true
+    var previousResolution: CGSize?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.window?.delegate = self
-        view.window?.contentMinSize = CGSize(width: 400, height: 300)
-        view.window?.contentMaxSize = CGSize(width: 3840, height: 2160)
-        view.window?.styleMask = [.titled, .closable, .resizable, .miniaturizable]
 
         let descriptor = CGVirtualDisplayDescriptor()
         descriptor.setDispatchQueue(DispatchQueue.main)
@@ -58,21 +51,6 @@ class ScreenViewController: SubscriberViewController<ScreenViewData>, NSWindowDe
             CGVirtualDisplayMode(width: 1280, height: 800, refreshRate: 60),
         ]
         display.apply(settings)
-
-        NSEvent.addLocalMonitorForEvents(matching: [.leftMouseUp]) {
-            // If mouse is not in the title bar
-            if self.location.y < self.window.contentView!.frame.height {
-                // Move cursor only if menu item is enabled
-                if self.moveCursorItemOnClick {
-                    // Move the mouse to the virtual display
-                    var newPoint = self.location
-                    newPoint.x = self.location.x * (self.previousResolution!.width / self.window.frame.size.width)
-                    newPoint.y = self.previousResolution!.height - self.location.y * (self.previousResolution!.height / self.window.contentView!.frame.height)
-                    CGDisplayMoveCursorToPoint(self.display.displayID, newPoint)
-                }
-            }
-            return $0
-        }
     }
 
     override func update(with viewData: ScreenViewData) {
@@ -92,6 +70,7 @@ class ScreenViewController: SubscriberViewController<ScreenViewData>, NSWindowDe
             view.window?.setContentSize(viewData.resolution)
             view.window?.contentAspectRatio = NSSize(width: viewData.resolution.width, height: viewData.resolution.height)
             view.window?.center()
+
             let stream = CGDisplayStream(
                 dispatchQueueDisplay: display.displayID,
                 outputWidth: Int(viewData.resolution.width),
