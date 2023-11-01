@@ -17,7 +17,7 @@ struct ScreenViewData: ViewDataType {
     let resolution: CGSize
 
     init(for fragment: StateFragment) {
-        isWindowHighlighted = fragment.mouseLocationState.isWithinScreen
+        isWindowHighlighted = fragment.mouseLocationState.isWithinVirtualDisplay
         resolution = fragment.resolution
     }
 }
